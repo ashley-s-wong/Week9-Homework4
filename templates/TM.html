@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Money</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #e0f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        h2 {
+            color: #00796b;
+            margin-bottom: 15px;
+            font-size: 24px;
+            transition: color 0.3s ease;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button.btn {
+            background-color: #00796b;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        button.btn:hover {
+            background-color: #004d40;
+        }
+
+        p {
+            color: #5d4037;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+
+        input[type="submit"] {
+            background-color: #00796b;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #004d40;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 500px;
+            }
+
+            h2 {
+                font-size: 28px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 600px;
+            }
+
+            h2 {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Transfer Money</h2>
+        <input type="text" id="payer" placeholder="Enter Payer Address">
+        <input type="text" id="payee" placeholder="Enter Payee Address">
+        <input type="number" id="amount" placeholder="Amount to Transfer">
+
+        <button class="btn" onclick="transfer()">Transfer</button>
+        <button class="btn" onclick="transaction()">View Transaction</button>
+
+        <p id="view_payer"></p>
+        <p id="view_payee"></p>
+        <p id="view_amount"></p>
+
+        <form action="/" method="post">
+            <input type="submit" value="Main">
+        </form>
+
+        <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+        <script>
+            const contractAddress = "0x1f0ea037bab1a73b7512c514b4f668ed860f1685";
+            const contractABI = [
+            {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "payer_add",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "payee_add",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount_transfer",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "transfer",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "constructor"
+                },
+                {
+                    "inputs": [],
+                    "name": "transaction",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                }
+            ];
+
+            const web3 = new Web3(Web3.givenProvider);
+            const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+            async function transfer() {
+                const accounts = await web3.eth.requestAccounts();
+                const payer = document.getElementById("payer").value;
+                const payee = document.getElementById("payee").value;
+                const amount = document.getElementById("amount").value;
+                await contract.methods.transfer(payer, payee, amount).send({ from: accounts[0] });
+            }
+
+            async function transaction() {
+                const result = await contract.methods.transaction().call();
+                document.getElementById("view_payer").innerText = "Payer address: " + result[0];
+                document.getElementById("view_payee").innerText = "Payee address: " + result[1];
+                document.getElementById("view_amount").innerText = "Amount: " + result[2];
+            }
+        </script>
+    </div>
+</body>
+</html>
